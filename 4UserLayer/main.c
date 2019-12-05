@@ -20,11 +20,17 @@
 /*----------------------------------------------*
  * 包含头文件                                   *
  *----------------------------------------------*/
-#define LOG_TAG    "main"
+
+
 #include "INCLUDES.h"
-#include "elog.h"
+
 #include "client.h"
 #include "tcp_server_demo.h"
+
+#include "mqtt_app.h"
+
+#define LOG_TAG    "main"
+#include "elog.h"
 
 
 /*----------------------------------------------*
@@ -52,10 +58,10 @@
 #define INFRARED_STK_SIZE 	512
 #define RS485_STK_SIZE 		1024*1
 #define START_STK_SIZE 	    128
-#define QR_STK_SIZE 		512
+#define QR_STK_SIZE 		1024*2
 #define READER_STK_SIZE     512
-#define KEY_STK_SIZE        1024*2
-#define APP_STK_SIZE 		1024*2
+#define KEY_STK_SIZE        1024*1
+#define APP_STK_SIZE 		1024*1
 #define LWIP_STK_SIZE 		256
 
 
@@ -185,7 +191,7 @@ void vTaskAppCreate (void *pvParameters)
 
 //    tcp_server_init(); //tcp server demo
 
-    mqtt_thread_init();
+//    mqtt_thread_init();
 
 //    client_init();
 
@@ -258,12 +264,12 @@ void vTaskAppCreate (void *pvParameters)
 
     //二维码扫码模块    
 //    xTaskCreate((TaskFunction_t )vTaskDisplay, 
-//    xTaskCreate((TaskFunction_t )vTaskQR,     
-//                (const char*    )"vTaskQR",   
-//                (uint16_t       )QR_STK_SIZE, 
-//                (void*          )NULL,
-//                (UBaseType_t    )QR_TASK_PRIO,
-//                (TaskHandle_t*  )&xHandleTaskQr);                  
+    xTaskCreate((TaskFunction_t )vTaskQR,     
+                (const char*    )"vTaskQR",   
+                (uint16_t       )QR_STK_SIZE, 
+                (void*          )NULL,
+                (UBaseType_t    )QR_TASK_PRIO,
+                (TaskHandle_t*  )&xHandleTaskQr);                  
 
     //看门狗
 //	xTaskCreate((TaskFunction_t )vTaskStart,     		/* 任务函数  */
@@ -692,8 +698,12 @@ void vTaskQR(void *pvParameters)
     uint8_t dat[128] = {0};
     uint16_t len = 0;
 
+    mqtt_thread();
+
     while(1)
     {
+
+        
 //       memset(recv_buf,0x00,sizeof(recv_buf));  
 //       memset(dat,0x00,sizeof(dat));  
 //       len = bsp_Usart3_RecvAtTime(recv_buf,18,100); 
@@ -706,7 +716,7 @@ void vTaskQR(void *pvParameters)
 		/* 发送事件标志，表示任务正常运行 */        
 		xEventGroupSetBits(xCreatedEventGroup, TASK_BIT_5);        
         
-        vTaskDelay(10);        
+        vTaskDelay(500);        
     }
 
 }   

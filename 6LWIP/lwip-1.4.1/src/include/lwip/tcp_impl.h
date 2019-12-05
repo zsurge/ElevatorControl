@@ -27,7 +27,7 @@
  * This file is part of the lwIP TCP/IP stack.
  * 
  * Author: Adam Dunkels <adam@sics.se>
- *
+ *  
  */
 #ifndef __LWIP_TCP_IMPL_H__
 #define __LWIP_TCP_IMPL_H__

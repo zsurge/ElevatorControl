@@ -1,10 +1,11 @@
 #include "malloc.h"
-
+#include "FreeRTOS.h"
+#include "task.h"
 
 //内存池(4字节对齐)
-__align(32) u8 mem1base[MEM1_MAX_SIZE];
-__align(32) u8 mem2base[MEM2_MAX_SIZE] __attribute__((at(0x68000000))); //外部SRAM内存池
-__align(32) u8 mem3base[MEM3_MAX_SIZE] __attribute__((at(0x10000000))); //内部CMM内存池
+__align(4) u8 mem1base[MEM1_MAX_SIZE];
+__align(4) u8 mem2base[MEM2_MAX_SIZE] __attribute__((at(0x68000000))); //外部SRAM内存池
+__align(4) u8 mem3base[MEM3_MAX_SIZE] __attribute__((at(0x10000000))); //内部CMM内存池
 //内存管理表
 u16 mem1mapbase[MEM1_ALLOC_TABLE_SIZE];													//内部SRAM内存池MAP，最大128K
 u16 mem2mapbase[MEM2_ALLOC_TABLE_SIZE] __attribute__((at(0X68000000+MEM2_MAX_SIZE)));	//外部SRAM内存池MAP，根据实际大小定
@@ -129,8 +130,10 @@ void myfree(u8 memx,void *ptr)
 {  
 	u32 offset;  
     if(ptr==NULL)return;//地址为0.  
+     taskENTER_CRITICAL();		//进入临界区(无法被中断打断)
  	offset=(u32)ptr-(u32)mallco_dev.membase[memx];  
     mymem_free(memx,offset);//释放内存     
+    	taskEXIT_CRITICAL();			//退出临界区(可以被中断打断) 
 }  
 
 //分配内存(外部调用)
@@ -139,8 +142,10 @@ void myfree(u8 memx,void *ptr)
 //返回值:分配到的内存首地址.
 void *mymalloc(u8 memx,u32 size)  
 {  
-  u32 offset;  									      
-	offset=mymem_malloc(memx,size);  	   				   
+  u32 offset;  		
+    taskENTER_CRITICAL();		//进入临界区(无法被中断打断)
+	offset=mymem_malloc(memx,size);  	  
+  	taskEXIT_CRITICAL();			//退出临界区(可以被中断打断)   
   if(offset==0XFFFFFFFF)return NULL;  
   else return (void*)((u32)mallco_dev.membase[memx]+offset);  
 }  
@@ -153,7 +158,9 @@ void *mymalloc(u8 memx,u32 size)
 void *myrealloc(u8 memx,void *ptr,u32 size)  
 {  
     u32 offset;  
+    taskENTER_CRITICAL();		//进入临界区(无法被中断打断)
     offset=mymem_malloc(memx,size);  
+    taskEXIT_CRITICAL();			//退出临界区(可以被中断打断) 
     if(offset==0XFFFFFFFF)return NULL;     
     else  
     {  									   

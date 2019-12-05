@@ -24,9 +24,10 @@ cJSON* cJSON_Data_Init(void)
   
   char* p = cJSON_Print(cJSON_Root);  /*p 指向的字符串是json格式的*/
   
-    log_i("send json = %s\r\n",p); 
-  
-  vPortFree(p);
+  log_i("send json = %s\r\n",p); 
+
+
+  my_free(p);
   p = NULL;
   
   return cJSON_Root;
@@ -43,26 +44,23 @@ uint8_t cJSON_Update(const cJSON * const object,const char * const string,void *
     int *b = (int*)d;
 //    printf ("d = %d",*b);
     cJSON_GetObjectItem(object,string)->type = *b ? cJSON_True : cJSON_False;
-//    char* p = cJSON_Print(object);    /*p 指向的字符串是json格式的*/
-    return 1;
   }
   else if(cJSON_IsString(node))
   {
     cJSON_GetObjectItem(object,string)->valuestring = (char*)d;
-//    char* p = cJSON_Print(object);    /*p 指向的字符串是json格式的*/
-    return 1;
   }
   else if(cJSON_IsNumber(node))
   {
     double *num = (double*)d;
-//    printf ("num = %f",*num);
-//    cJSON_GetObjectItem(object,string)->valueint = (double)*num;
     cJSON_GetObjectItem(object,string)->valuedouble = (double)*num;
-//    char* p = cJSON_Print(object);    /*p 指向的字符串是json格式的*/
-    return 1;
+
+    my_free(num);
   }
-  else
-    return 1;
+
+   cJSON_Delete(node);
+
+  return 1;
+
 }
 
 void Proscess(void* data)
@@ -93,6 +91,10 @@ void Proscess(void* data)
               json_hum_num->valuestring);
 
   cJSON_Delete(root);  //释放内存 
+  cJSON_Delete(json_name);
+  cJSON_Delete(json_obj_data);
+  cJSON_Delete(json_temp_num);
+  cJSON_Delete(json_hum_num);
 }
 
 

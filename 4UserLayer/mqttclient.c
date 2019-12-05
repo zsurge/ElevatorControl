@@ -685,6 +685,7 @@ MQTT_START:
 CLOSE:
 	//关闭链接
 	transport_close();
+    
 	//重新链接服务器
 	goto MQTT_START;
 }
@@ -738,8 +739,12 @@ MQTT_SEND_START:
 					//获取当前滴答，作为心跳包起始时间
 					curtick = xTaskGetTickCount();
 				}
+
+                
 				vPortFree ( p );
 				p = NULL;
+
+                cJSON_Delete(cJSON_Data);
 			}
 			else
 			{
@@ -781,7 +786,10 @@ MQTT_SEND_CLOSE:
 void
 mqtt_thread_init ( void )
 {
+    
 	sys_thread_new ( "iperf_client", mqtt_thread, NULL, 1024*4, 7 );
-	sys_thread_new ( "iperf_client", mqtt_send, NULL, 1024*2, 6 );
+
+    
+//	sys_thread_new ( "iperf_client", mqtt_send, NULL, 1024*2, 6 );
 }
 

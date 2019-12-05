@@ -1,4 +1,4 @@
-/*
+/**
  * Copyright (c) 2001-2003 Swedish Institute of Computer Science.
  * All rights reserved. 
  * 
@@ -28,11 +28,24 @@
  * 
  * Author: Adam Dunkels <adam@sics.se>
  *
- */
-#ifndef __PERF_H__
-#define __PERF_H__
+ **/
+#ifndef __FSDATA_H__
+#define __FSDATA_H__
 
-#define PERF_START    /* null definition */
-#define PERF_STOP(x)  /* null definition */
+#include "lwip/opt.h"
+#include "fs.h"
 
-#endif /* __PERF_H__ */
+//fsdata_file结构体
+struct fsdata_file {
+  const struct fsdata_file *next; //指向一个fsdata_file文件
+  const unsigned char *name;  //名字
+  const unsigned char *data;  //数据
+  int len; 										//长度
+  u8_t http_header_included;
+#if HTTPD_PRECALCULATED_CHECKSUM
+  u16_t chksum_count;
+  const struct fsdata_chksum *chksum;
+#endif /* HTTPD_PRECALCULATED_CHECKSUM */
+};
+
+#endif /* __FSDATA_H__ */

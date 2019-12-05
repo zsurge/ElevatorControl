@@ -4,23 +4,6 @@
 #include "netif/etharp.h"  
 #include "string.h"  
 
-//////////////////////////////////////////////////////////////////////////////////	 
-//本程序只供学习使用，未经作者许可，不得用于其它任何用途
-//ALIENTEK STM32F407开发板
-//ethernetif.c 代码	   
-//正点原子@ALIENTEK
-//技术论坛:www.openedv.com
-//创建日期:2014/8/15
-//版本：V1.0
-//版权所有，盗版必究。
-//Copyright(C) 广州市星翼电子科技有限公司 2009-2019
-//All rights reserved									  
-//*******************************************************************************
-//修改信息
-//无
-////////////////////////////////////////////////////////////////////////////////// 	   
- 
- 
 //由ethernetif_init()调用用于初始化硬件
 //netif:网卡结构体指针 
 //返回值:ERR_OK,正常
@@ -64,17 +47,17 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p)
 	u8 res;
 	struct pbuf *q;
 	int l = 0;
-	u8 *buffer=(u8 *)ETH_GetCurrentTxBuffer(); //获取当前要发送的DMA描述符中的缓冲区地址
+	u8 *buffer=(u8 *)ETH_GetCurrentTxBuffer(); 
 	for(q=p;q!=NULL;q=q->next) 
 	{
 		memcpy((u8_t*)&buffer[l], q->payload, q->len);
 		l=l+q->len;
 	} 
-	res=ETH_Tx_Packet(l); //调用ETH_Tx_Packet函数发送数据
+	res=ETH_Tx_Packet(l); 
 	if(res==ETH_ERROR)return ERR_MEM;//返回错误状态
 	return ERR_OK;
-}  
-///用于接收数据包的最底层函数
+} 
+//用于接收数据包的最底层函数
 //neitif:网卡结构体指针
 //返回值:pbuf数据结构体指针
 static struct pbuf * low_level_input(struct netif *netif)
@@ -104,7 +87,7 @@ static struct pbuf * low_level_input(struct netif *netif)
 		ETH->DMARPDR=0;//恢复DMA接收
 	}
 	return p;
-}
+} 
 //网卡接收数据(lwip直接调用)
 //netif:网卡结构体指针
 //返回值:ERR_OK,发送正常
@@ -113,9 +96,9 @@ err_t ethernetif_input(struct netif *netif)
 {
 	err_t err;
 	struct pbuf *p;
-	p=low_level_input(netif);   //调用low_level_input函数接收数据
+	p=low_level_input(netif);
 	if(p==NULL) return ERR_MEM;
-	err=netif->input(p, netif); //调用netif结构体中的input字段(一个函数)来处理数据包
+	err=netif->input(p, netif);
 	if(err!=ERR_OK)
 	{
 		LWIP_DEBUGF(NETIF_DEBUG,("ethernetif_input: IP input error\n"));
@@ -141,10 +124,6 @@ err_t ethernetif_init(struct netif *netif)
 	low_level_init(netif); 		//底层硬件初始化函数
 	return ERR_OK;
 }
-
-
-
-
 
 
 

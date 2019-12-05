@@ -25,42 +25,72 @@
  * OF SUCH DAMAGE.
  *
  * This file is part of the lwIP TCP/IP stack.
- *
+ * 
  * Author: Adam Dunkels <adam@sics.se>
  *
  */
-#ifndef __SYS_RTXC_H__
-#define __SYS_RTXC_H__
+#ifndef __ARCH_SYS_ARCH_H__
+#define __ARCH_SYS_ARCH_H__ 
 
+#include "arch/cc.h"
 #include "FreeRTOS.h"
 #include "task.h"
 #include "queue.h"
 #include "semphr.h"
 
-#define SYS_MBOX_NULL (xQueueHandle)0
-#define SYS_SEM_NULL  (xSemaphoreHandle)0
-#define SYS_DEFAULT_THREAD_STACK_DEPTH	configMINIMAL_STACK_SIZE
+ 
+#ifdef SYS_ARCH_GLOBALS
+#define SYS_ARCH_EXT
+#else
+#define SYS_ARCH_EXT extern
+#endif
+ 
+#define MAX_QUEUES        		10	// 消息邮箱的数量
+#define MAX_QUEUE_ENTRIES 		20	// 每个消息邮箱的大小
+//LWIP消息邮箱结构体
+//LWIP消息邮箱结构体
+typedef struct {
+	  QueueHandle_t xQueue;
+}lwip_mbox;
 
-typedef xSemaphoreHandle sys_sem_t;
-typedef xQueueHandle sys_mbox_t;
-typedef xTaskHandle sys_thread_t;
+typedef SemaphoreHandle_t sys_sem_t;    		//LWIP使用的信号量
+typedef QueueHandle_t sys_mutex_t; 		//LWIP使用的互斥信号量
+typedef lwip_mbox 	sys_mbox_t;    		//LWIP使用的消息邮箱,其实就是UCOS中的消息队列
+typedef unsigned char  sys_thread_t;     	//线程ID,也就是任务优先级
+#endif 
 
-typedef struct _sys_arch_state_t
-{
-	// Task creation data.
-	char cTaskName[configMAX_TASK_NAME_LEN];
-	unsigned short nStackDepth;
-	unsigned short nTaskCount;
-} sys_arch_state_t;
+
+/* __SYS_RTXC_H__ */
 
 
 
-//extern sys_arch_state_t s_sys_arch_state;
 
-//void sys_set_default_state();
-//void sys_set_state(signed char *pTaskName, unsigned short nStackSize);
 
-/* Message queue constants. */
-#define archMESG_QUEUE_LENGTH	( 6 )
-#endif /* __SYS_RTXC_H__ */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

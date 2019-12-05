@@ -1,46 +1,31 @@
-#ifndef __TRANSPORT_H
-#define __TRANSPORT_H
+/*******************************************************************************
+ * Copyright (c) 2014 IBM Corp.
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * and Eclipse Distribution License v1.0 which accompany this distribution.
+ *
+ * The Eclipse Public License is available at
+ *    http://www.eclipse.org/legal/epl-v10.html
+ * and the Eclipse Distribution License is available at
+ *   http://www.eclipse.org/org/documents/edl-v10.php.
+ *
+ * Contributors:
+ *    Ian Craggs - initial API and implementation and/or initial documentation
+ *    Sergio R. Caprile - "commonalization" from prior samples and/or documentation extension
+ *******************************************************************************/
+ 
+  /**********************************************************************************************************
+** 文件名		:transport.h
+** 作者			:maxlicheng<licheng.chn@outlook.com>
+** 作者github	:https://github.com/maxlicheng
+** 作者博客		:https://www.maxlicheng.com/	
+** 生成日期		:2018-08-08
+** 描述			:mqtt通信接口头文件
+************************************************************************************************************/
 
-#include "stm32f4xx.h"
-
-/************************************************************************
-** 函数名称: transport_sendPacketBuffer									
-** 函数功能: 以TCP方式发送数据
-** 入口参数: unsigned char* buf：数据缓冲区
-**           int buflen：数据长度
-** 出口参数: <0发送数据失败							
-************************************************************************/
-int32_t transport_sendPacketBuffer( uint8_t* buf, int32_t buflen);
-
-/************************************************************************
-** 函数名称: transport_getdata									
-** 函数功能: 以阻塞的方式接收TCP数据
-** 入口参数: unsigned char* buf：数据缓冲区
-**           int count：数据长度
-** 出口参数: <=0接收数据失败									
-************************************************************************/
-int32_t transport_getdata(uint8_t* buf, int32_t count);
-
-/************************************************************************
-** 函数名称: transport_open									
-** 函数功能: 打开一个接口，并且和服务器 建立连接
-** 入口参数: char* servip:服务器域名
-**           int   port:端口号
-** 出口参数: <0打开连接失败										
-************************************************************************/
-int32_t transport_open(int8_t* servip, int32_t port);
-//int transport_open(char* addr, int port);
-
-
-/************************************************************************
-** 函数名称: transport_close									
-** 函数功能: 关闭套接字
-** 入口参数: unsigned char* buf：数据缓冲区
-**           int buflen：数据长度
-** 出口参数: <0发送数据失败							
-************************************************************************/
-int32_t transport_close(void);
-
-
-
-#endif
+int transport_sendPacketBuffer(int sock, unsigned char* buf, int buflen);
+int transport_getdata(unsigned char* buf, int count);
+int transport_getdatanb(void *sck, unsigned char* buf, int count);
+int transport_open(char* host, int port);
+int transport_close(int sock);

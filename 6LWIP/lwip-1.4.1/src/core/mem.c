@@ -180,8 +180,7 @@ struct mem {
 #ifndef LWIP_RAM_HEAP_POINTER
 /** the heap. we need one struct mem at the end and some room for alignment */
 //u8_t ram_heap[MEM_SIZE_ALIGNED + (2*SIZEOF_STRUCT_MEM) + MEM_ALIGNMENT];
-//ram_heap在lwip_comm.c文件中的lwip_comm_mem_malloc()函数采用ALIENTEK动态内存管理函数分配内存
-u8_t *ram_heap;	
+u8_t *ram_heap;	//ram_heap采用ALIENTEK进行分配,分配过程在mem_init中
 #define LWIP_RAM_HEAP_POINTER ram_heap
 #endif /* LWIP_RAM_HEAP_POINTER */
 
