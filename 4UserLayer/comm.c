@@ -225,7 +225,7 @@ void deal_rx_data(void)
                 if(parseJSON(json_buf,&cmd_rx) == COMM_SUCCESS)
                 {
                     //向外设发送指令而不是主机，目前做为测试用
-                    dbg("parseJSON success!\r\n");
+                    DBG("parseJSON success!\r\n");
                     send_to_device(&cmd_rx);
                 }
                 else
@@ -380,7 +380,7 @@ static COMM_ERR parseJSON(uint8_t *text,CMD_RX_T *cmd_rx)
         asc2bcd(bcd_dat,tmpdat,asc_len,0);
         memcpy(cmd_rx->cmd_data,bcd_dat,asc_len/2);
 
-        dbg("cmd_rx->cmd_data = %s\r\n",cmd_rx->cmd_data);
+        DBG("cmd_rx->cmd_data = %s\r\n",cmd_rx->cmd_data);
     }
     
 
@@ -454,7 +454,7 @@ void send_to_device(CMD_RX_T *cmd_rx)
     uint16_t iCRC = 0;
     CMD_TX_T cmd_tx;
 
-    dbg("cmd_rx.cmd = %02x\r\n",cmd_rx->cmd);
+    DBG("cmd_rx.cmd = %02x\r\n",cmd_rx->cmd);
     
     memset(&cmd_tx,0x00,sizeof(cmd_tx));
     
@@ -466,7 +466,7 @@ void send_to_device(CMD_RX_T *cmd_rx)
             cmd_tx.cmd = GETSENSOR;
             cmd_tx.code = 0x00;
             bsp_GetSensorStatus(cmd_tx.data);
-            dbg("2cmd_tx.data = %s\r\n",cmd_tx.data);         
+            DBG("2cmd_tx.data = %s\r\n",cmd_tx.data);         
             i += packetJSON(&cmd_tx,tmpBuf);            
             memcpy(TxdBuf+3,tmpBuf,i-3); 
             TxdBuf[i++] = ETX;  
@@ -480,23 +480,7 @@ void send_to_device(CMD_RX_T *cmd_rx)
             TxdBuf[i++] = iCRC & 0xff;            
             break;
         case SETLED: //设置LED灯
-            i = 3;
-            TxdBuf[0] = STX;
-            cmd_tx.cmd = SETLED;
-            cmd_tx.code = 0x00;
-            dbg("cmd_rx->cmd_data = %s,len = %d\r\n",cmd_rx->cmd_data,strlen((const char*)cmd_rx->cmd_data));
-            bsp_Ex_SetLed(cmd_rx->cmd_data); 
-            strcpy((char *)cmd_tx.data,"00");            
-            i += packetJSON(&cmd_tx,tmpBuf);            
-            memcpy(TxdBuf+3,tmpBuf,i-3); 
-            TxdBuf[i++] = ETX;     
 
-            TxdBuf[1] = i>>8; //high
-            TxdBuf[2] = i&0xFF; //low
-            
-            iCRC = CRC16_Modbus(TxdBuf, i);  
-            TxdBuf[i++] = iCRC >> 8;
-            TxdBuf[i++] = iCRC & 0xff;   
             break;                        
         case GETDEVICESAT://获取设备状态
 
@@ -506,7 +490,7 @@ void send_to_device(CMD_RX_T *cmd_rx)
             TxdBuf[0] = STX;
             cmd_tx.cmd = GETVER;
             cmd_tx.code = 0x00;
-            dbg("cmd_rx->cmd_data = %s,len = %d\r\n",cmd_rx->cmd_data,strlen((const char*)cmd_rx->cmd_data));
+            DBG("cmd_rx->cmd_data = %s,len = %d\r\n",cmd_rx->cmd_data,strlen((const char*)cmd_rx->cmd_data));
             strcpy((char *)cmd_tx.data,"V1.0.1");            
             i += packetJSON(&cmd_tx,tmpBuf); 
             memcpy(TxdBuf+3,tmpBuf,i-3); 
@@ -529,7 +513,7 @@ void send_to_device(CMD_RX_T *cmd_rx)
 
         case CONTROLMOTOR:       
              //向电机发送控制指令
-            dbg("<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>\r\n");
+            DBG("<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>\r\n");
             dbh("CONTROL MOTOR", (char *)cmd_rx->cmd_data, 8);
 //            bsp_Usart4_SendData(cmd_rx->cmd_data,8);//发给主机
             comSendBuf(COM1,cmd_rx->cmd_data,8);

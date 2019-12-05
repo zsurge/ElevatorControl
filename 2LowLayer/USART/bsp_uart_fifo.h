@@ -41,7 +41,7 @@
 */
 
 /* 定义使能的串口, 0 表示不使能（不增加代码大小）， 1表示使能 */
-#define	UART1_FIFO_EN	1
+#define	UART1_FIFO_EN	0
 #define	UART2_FIFO_EN	1
 #define	UART3_FIFO_EN	1
 #define	UART4_FIFO_EN	0
@@ -50,8 +50,8 @@
 
 
 /* 定义使能的485接口, 0 表示不使能（不增加代码大小）， 1表示使能 */
-#define UART1_RS485_EN	1
-#define	UART2_RS485_EN	1
+#define UART1_RS485_EN	0
+#define	UART2_RS485_EN	0
 #define	UART3_RS485_EN	0
 #define	UART4_RS485_EN	0
 #define	UART5_RS485_EN	0
@@ -87,13 +87,13 @@ typedef enum
 
 /* 定义串口波特率和FIFO缓冲区大小，分为发送缓冲区和接收缓冲区, 支持全双工 */
 #if UART1_FIFO_EN == 1
-	#define UART1_BAUD			115200
+	#define UART1_BAUD			38400
 	#define UART1_TX_BUF_SIZE	1*1024
 	#define UART1_RX_BUF_SIZE	1*1024
 #endif
 
 #if UART2_FIFO_EN == 1
-	#define UART2_BAUD			115200
+	#define UART2_BAUD			38400
 	#define UART2_TX_BUF_SIZE	1*1024
 	#define UART2_RX_BUF_SIZE	1*1024
 #endif

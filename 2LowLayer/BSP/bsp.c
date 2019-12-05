@@ -68,20 +68,20 @@
 
 
     
-    STM_FLASH_Init();           //芯片内部FLASH初始化
-    easyflash_init();           //外部FLASH初始化，使用easyflash    
+//    STM_FLASH_Init();           //芯片内部FLASH初始化
+//    easyflash_init();           //外部FLASH初始化，使用easyflash    
 //    bsp_spi_flash_init();
 
-//    bsp_beep_init();            //蜂鸣器初始化    
-    bsp_infrared_init();      //红外传感器初始化
+    bsp_beep_init();            //蜂鸣器初始化    
+    
+//    bsp_infrared_init();      //红外传感器初始化
 
 
-    bsp_WiegandInit();          //韦根读卡器初始化
+//    bsp_WiegandInit();          //韦根读卡器初始化
 
-    bsp_OTHER_test_Init();
 
-    bsp_lock_init();
 
+ 
 
 }
 

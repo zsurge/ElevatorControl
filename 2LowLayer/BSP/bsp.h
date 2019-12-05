@@ -32,11 +32,18 @@
 #include "easyflash.h"
 //#include "sfud.h"
 
+#include "lwip_comm.h"
+#include "lwip/netif.h"
+#include "lwipopts.h"
+
+
 
 
 //驱动层头文件
 #include "bsp_flash.h"
 #include "bsp_uart_fifo.h"
+
+#include "LAN8720.h"
 
 //#include "bsp_usart.h"
 //#include "bsp_usart1.h"

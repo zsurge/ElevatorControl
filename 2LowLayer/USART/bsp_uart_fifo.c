@@ -54,10 +54,10 @@ int fputc(int ch, FILE *f)
 	return ch;
 #else	/* 采用阻塞方式发送每个字符,等待数据发送完毕 */
 	/* 写一个字节到USART1 */
-	USART_SendData(USART3, (uint8_t) ch);
+	USART_SendData(USART2, (uint8_t) ch);
 
 	/* 等待发送结束 */
-	while (USART_GetFlagStatus(USART3, USART_FLAG_TC) == RESET)
+	while (USART_GetFlagStatus(USART2, USART_FLAG_TC) == RESET)
 	{}
 
 	return ch;
@@ -78,7 +78,7 @@ int fgetc(FILE *f)
 #if 1	/* 从串口接收FIFO中取1个数据, 只有取到数据才返回 */
 	uint8_t ucData;
 
-	while(comGetChar(COM5, &ucData) == 0);
+	while(comGetChar(COM2, &ucData) == 0);
 
 	return ucData;
 #else
@@ -262,7 +262,7 @@ USART_TypeDef *ComToUSARTx(COM_PORT_E _ucPort)
 	else if (_ucPort == COM4)
 	{
 		#if UART4_FIFO_EN == 1
-			return USART4;
+			return UART4;
 		#else
 			return 0;
 		#endif
@@ -271,6 +271,14 @@ USART_TypeDef *ComToUSARTx(COM_PORT_E _ucPort)
 	{
 		#if UART5_FIFO_EN == 1
 			return UART5;
+		#else
+			return 0;
+		#endif
+	}
+	else if (_ucPort == COM6)
+	{
+		#if UART6_FIFO_EN == 1
+			return USART6;
 		#else
 			return 0;
 		#endif
@@ -345,6 +353,32 @@ uint8_t comGetChar(COM_PORT_E _ucPort, uint8_t *_pByte)
 
 	return UartGetChar(pUart, _pByte);
 }
+
+uint8_t comRecvBuff(COM_PORT_E _ucPort,uint8_t *buf, uint8_t len)
+{
+    uint8_t i = 0;
+
+    UART_T *pUart;
+	pUart = ComToUart(_ucPort);
+    
+	if (pUart == 0)
+	{
+		return 0;
+	}
+    
+    if(len > pUart->usRxCount)  //指定读取长度大于实际接收到的数据长度时
+    {
+        len=pUart->usRxCount; //读取长度设置为实际接收到的数据长度
+    }
+    
+    for(i=0;i<len;i++)  //拷贝接收到的数据到接收指针中
+    {
+        UartGetChar(pUart,buf+i);  //将数据复制到buf中
+    }
+
+    return len;                   //返回实际读取长度
+}
+
 
 /*
 *********************************************************************************************************
@@ -1065,10 +1099,10 @@ static void InitHardUart(void)
 	RCC_APB1PeriphClockCmd(RCC_APB1Periph_UART4, ENABLE);
 
 	/* 将 PC10 映射为 UART4_TX */
-	GPIO_PinAFConfig(GPIOC, GPIO_PinSource10, GPIO_AF_USART1);
+	GPIO_PinAFConfig(GPIOC, GPIO_PinSource10, GPIO_AF_UART4);
 
 	/* 将 PC11 映射为 UART4_RX */
-	GPIO_PinAFConfig(GPIOC, GPIO_PinSource11, GPIO_AF_USART1);
+	GPIO_PinAFConfig(GPIOC, GPIO_PinSource11, GPIO_AF_UART4);
 
 	/* 配置 USART Tx 为复用功能 */
 	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;	/* 输出类型为推挽 */
@@ -1085,7 +1119,7 @@ static void InitHardUart(void)
 	GPIO_Init(GPIOC, &GPIO_InitStructure);
 
 	/* 第2步： 配置串口硬件参数 */
-	USART_InitStructure.USART_BaudRate = UART1_BAUD;	/* 波特率 */
+	USART_InitStructure.USART_BaudRate = UART4_BAUD;	/* 波特率 */
 	USART_InitStructure.USART_WordLength = USART_WordLength_8b;
 	USART_InitStructure.USART_StopBits = USART_StopBits_1;
 	USART_InitStructure.USART_Parity = USART_Parity_No ;
@@ -1307,31 +1341,7 @@ static void UartSend(UART_T *_pUart, uint8_t *_ucaBuf, uint16_t _usLen)
 	for (i = 0; i < _usLen; i++)
 	{
 		/* 如果发送缓冲区已经满了，则等待缓冲区空 */
-	#if 0
-		/*
-			在调试GPRS例程时，下面的代码出现死机，while 死循环
-			原因： 发送第1个字节时 _pUart->usTxWrite = 1；_pUart->usTxRead = 0;
-			将导致while(1) 无法退出
-		*/
-		while (1)
-		{
-			uint16_t usRead;
 
-			DISABLE_INT();
-			usRead = _pUart->usTxRead;
-			ENABLE_INT();
-
-			if (++usRead >= _pUart->usTxBufSize)
-			{
-				usRead = 0;
-			}
-
-			if (usRead != _pUart->usTxWrite)
-			{
-				break;
-			}
-		}
-	#else
 		/* 当 _pUart->usTxBufSize == 1 时, 下面的函数会死掉(待完善) */
 		while (1)
 		{
@@ -1344,8 +1354,15 @@ static void UartSend(UART_T *_pUart, uint8_t *_ucaBuf, uint16_t _usLen)
 			{
 				break;
 			}
+            else if(usCount == _pUart->usTxBufSize)/* 数据已填满缓冲区 */
+			{
+				if((_pUart->uart->CR1 & USART_CR1_TXEIE) == 0)
+				{
+					SET_BIT(_pUart->uart->CR1, USART_CR1_TXEIE);
+				}  
+			}
 		}
-	#endif
+	
 
 		/* 将新数据填入发送缓冲区 */
 		_pUart->pTxBuf[_pUart->usTxWrite] = _ucaBuf[i];

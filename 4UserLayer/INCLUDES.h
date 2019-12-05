@@ -39,6 +39,10 @@
 #include "delay.h"
 #include "cmd_fun.h"
 #include "ini.h"
+#include "malloc.h"
+
+
+
 
     
     //用户层头文件
@@ -46,6 +50,9 @@
 #include "iap.h"
 #include "tool.h"
 #include "comm.h"
+
+
+
 
 /*
 *********************************************************************************************************

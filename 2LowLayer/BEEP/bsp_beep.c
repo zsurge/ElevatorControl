@@ -8,19 +8,20 @@ int melody[] = {50, 50, 50, 50, 200, 200, 200, 400, 400, 500, 500, 500};
 
 void bsp_beep_init(void)
 {   
-  GPIO_InitTypeDef  GPIO_InitStructure;
+    GPIO_InitTypeDef  GPIO_InitStructure;
+    
+    RCC_AHB1PeriphClockCmd(RCC_ALL_BEEP, ENABLE);//使能GPIOF时钟
+    
+    //初始化蜂鸣器对应引脚GPIOF8
+    GPIO_InitStructure.GPIO_Pin = GPIO_PIN_BEEP;
+    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;//普通输出模式
+    GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;//推挽输出
+    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;//100MHz
+    GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_DOWN;//下拉
+    GPIO_Init(GPIO_PORT_BEEP, &GPIO_InitStructure);//初始化GPIO
+      
+    GPIO_ResetBits(GPIO_PORT_BEEP,GPIO_PIN_BEEP);  //蜂鸣器对应引脚GPIOF6拉低， 
 
-  RCC_AHB1PeriphClockCmd(RCC_ALL_BEEP, ENABLE);//使能GPIOF时钟
-  
-  //初始化蜂鸣器对应引脚GPIOF8
-  GPIO_InitStructure.GPIO_Pin = GPIO_PIN_BEEP;
-  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;//普通输出模式
-  GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;//推挽输出
-  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;//100MHz
-  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_DOWN;//下拉
-  GPIO_Init(GPIO_PORT_BEEP, &GPIO_InitStructure);//初始化GPIO
-	
-  GPIO_ResetBits(GPIO_PORT_BEEP,GPIO_PIN_BEEP);  //蜂鸣器对应引脚GPIOF8拉低， 
 
 }
 

@@ -11,11 +11,11 @@
 #include "lwip/tcpip.h" 
 #include "malloc.h"
 #include "delay.h"
-#include "usart.h"  
 #include <stdio.h>
 #include "FreeRTOS.h"
 #include "task.h"
-#include "led.h"
+#include "bsp_led.h"
+
 //这是个LWIP的通用文件
 
 //////////////////////////////////////////////////////////////////////////////////	 
@@ -149,11 +149,21 @@ u8 lwip_comm_init(void)
 	struct ip_addr ipaddr;  						//ip地址
 	struct ip_addr netmask; 						//子网掩码
 	struct ip_addr gw;      						//默认网关 
+
 	if(ETH_Mem_Malloc())return 1;				//内存申请失败
-	if(lwip_comm_mem_malloc())return 1;	//内存申请失败
-	if(LAN8720_Init())return 2;					//初始化LAN8720失败 
+
+	
+	if(lwip_comm_mem_malloc())return 2;	//内存申请失败
+
+	
+	if(LAN8720_Init())return 3;					//初始化LAN8720失败 
+
+    
+	lwip_comm_default_ip_set(&lwipdev);	//设置默认IP等信息    
+	
 	tcpip_init(NULL,NULL);							//初始化tcp ip内核,该函数里面会创建tcpip_thread内核任务
-	lwip_comm_default_ip_set(&lwipdev);	//设置默认IP等信息
+    
+
 
 #if LWIP_DHCP		//使用动态IP
 	ipaddr.addr = 0;
@@ -168,11 +178,13 @@ u8 lwip_comm_init(void)
 	printf("子网掩码..........................%d.%d.%d.%d\r\n",lwipdev.netmask[0],lwipdev.netmask[1],lwipdev.netmask[2],lwipdev.netmask[3]);
 	printf("默认网关..........................%d.%d.%d.%d\r\n",lwipdev.gateway[0],lwipdev.gateway[1],lwipdev.gateway[2],lwipdev.gateway[3]);
 #endif
+
 	p=sys_arch_protect();   //进入临界区
 	Netif_Init_Flag=netif_add(&lwip_netif,&ipaddr,&netmask,&gw,NULL,&ethernetif_init,&tcpip_input);//向网卡列表中添加一个网口
 	sys_arch_unprotect(p);  //退出临界区
+
 	
-	if(Netif_Init_Flag==NULL)return 3;//网卡添加失败 
+	if(Netif_Init_Flag==NULL)return 4;//网卡添加失败 
 	else//网口添加成功后,设置netif为默认值,并且打开netif网口
 	{
 		netif_set_default(&lwip_netif); //设置netif为默认网口
@@ -257,3 +269,30 @@ void lwip_dhcp_task(void *pvParameters)
 	lwip_comm_dhcp_delete(); //删除DHCP任务 
 }
 #endif 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

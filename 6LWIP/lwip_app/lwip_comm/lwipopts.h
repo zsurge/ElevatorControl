@@ -13,25 +13,25 @@
 #define MEM_ALIGNMENT           4  
 
 //MEM_SIZE:heap内存的大小,如果在应用中有大量数据发送的话这个值最好设置大一点 
-#define MEM_SIZE                16000 //内存堆大小
+#define MEM_SIZE                20*1024 	//内存堆heap大小
 
 //MEMP_NUM_PBUF:memp结构的pbuf数量,如果应用从ROM或者静态存储区发送大量数据时,这个值应该设置大一点
-#define MEMP_NUM_PBUF           20
+#define MEMP_NUM_PBUF           20 		//MEMP_NUM_PBUF:memp结构的pbuf数量,如果应用从ROM或者静态存储区发送大量数据时,这个值应该设置大一点
 
 //MEMP_NUM_UDP_PCB:UDP协议控制块(PCB)数量.每个活动的UDP"连接"需要一个PCB.
-#define MEMP_NUM_UDP_PCB        6
+#define MEMP_NUM_UDP_PCB        6		//MEMP_NUM_UDP_PCB:UDP协议控制块(PCB)数量.每个活动的UDP"连接"需要一个PCB.
 
 //MEMP_NUM_TCP_PCB:同时建立激活的TCP数量
-#define MEMP_NUM_TCP_PCB        10
+#define MEMP_NUM_TCP_PCB        10		//MEMP_NUM_TCP_PCB:同时建立激活的TCP数量
 
 //MEMP_NUM_TCP_PCB_LISTEN:能够监听的TCP连接数量
-#define MEMP_NUM_TCP_PCB_LISTEN 6
+#define MEMP_NUM_TCP_PCB_LISTEN 6		//MEMP_NUM_TCP_PCB_LISTEN:能够监听的TCP连接数量
 
 //MEMP_NUM_TCP_SEG:最多同时在队列中的TCP段数量
 #define MEMP_NUM_TCP_SEG        15
 
 //MEMP_NUM_SYS_TIMEOUT:能够同时激活的timeout个数
-#define MEMP_NUM_SYS_TIMEOUT    8
+#define MEMP_NUM_SYS_TIMEOUT    8		//MEMP_NUM_SYS_TIMEOUT:能够同时激活的timeout个数
 
 
 /* ---------- Pbuf选项---------- */
@@ -39,18 +39,14 @@
 #define PBUF_POOL_SIZE          20
 
 //PBUF_POOL_BUFSIZE:每个pbuf内存池大小. 
-#define PBUF_POOL_BUFSIZE       512
+#define PBUF_POOL_BUFSIZE       512		//PBUF_POOL_BUFSIZE:每个pbuf内存池大小
 
 
 /* ---------- TCP选项---------- */
 #define LWIP_TCP                1  //为1是使用TCP
 #define TCP_TTL                 255//生存时间
 
-/*当TCP的数据段超出队列时的控制位,当设备的内存过小的时候此项应为0*/
-#undef TCP_QUEUE_OOSEQ
-#define TCP_QUEUE_OOSEQ         0
 
-//最大TCP分段
 #define TCP_MSS                 (1500 - 40)	  //最大TCP分段,TCP_MSS = (MTU - IP报头大小 - TCP报头大小
 
 //TCP发送缓冲区大小(bytes).
@@ -65,6 +61,8 @@
 
 /* ---------- ICMP选项---------- */
 #define LWIP_ICMP                 1 //使用ICMP协议
+
+#define LWIP_DNS               1
 
 /* ---------- DHCP选项---------- */
 //当使用DHCP时此位应该为1,LwIP 0.5.1版本中没有DHCP服务.
@@ -135,13 +133,13 @@
 #define LWIP_SO_RCVTIMEO                1 //通过定义LWIP_SO_RCVTIMEO使能netconn结构体中recv_timeout,使用recv_timeout可以避免阻塞线程
 
 //有关系统的选项
-#define TCPIP_MBOX_SIZE                 20
-#define DEFAULT_UDP_RECVMBOX_SIZE       2000
-#define DEFAULT_TCP_RECVMBOX_SIZE       2000
-#define DEFAULT_ACCEPTMBOX_SIZE         2000
-#define DEFAULT_THREAD_STACKSIZE        512
+#define TCPIP_MBOX_SIZE                 8
+#define DEFAULT_UDP_RECVMBOX_SIZE       10
+#define DEFAULT_TCP_RECVMBOX_SIZE       10
+#define DEFAULT_ACCEPTMBOX_SIZE         10
+#define DEFAULT_THREAD_STACKSIZE        1024
 //内核任务堆栈大小
-#define TCPIP_THREAD_STACKSIZE         1000      //内核任务堆栈大小
+#define TCPIP_THREAD_STACKSIZE         2048      //内核任务堆栈大小
 #define TCPIP_THREAD_PRIO               (configMAX_PRIORITIES - 2)				//内核任务优先级
 /*
    ----------------------------------------

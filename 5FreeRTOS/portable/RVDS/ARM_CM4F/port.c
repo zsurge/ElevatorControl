@@ -731,7 +731,7 @@ __asm uint32_t vPortGetIPSR( void )
 	{
 	uint32_t ulCurrentInterrupt;
 	uint8_t ucCurrentPriority;
-    int i= 0;
+//    int i= 0;
 
 		/* Obtain the number of the currently executing interrupt. */
 		ulCurrentInterrupt = vPortGetIPSR();
@@ -766,7 +766,7 @@ __asm uint32_t vPortGetIPSR( void )
 			http://www.freertos.org/RTOS-Cortex-M3-M4.html
 			http://www.freertos.org/FAQHelp.html */
 			configASSERT( ucCurrentPriority >= ucMaxSysCallPriority );
-            while(i++<2800);
+//            while(i++<2800);
 		}
 
 		/* Priority grouping:  The interrupt controller (NVIC) allows the bits

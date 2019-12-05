@@ -43,6 +43,7 @@ lwip协议栈之间提供一个接口桥梁，当用户移植lwip到一个新的操作系统的时候，只需要修
 #include "task.h"
 #include "lwip/lwip_timers.h"
 
+const uint32_t NullMessage;
 
 xTaskHandle xTaskGetCurrentTaskHandle( void ) PRIVILEGED_FUNCTION;
 
@@ -57,6 +58,8 @@ struct timeoutlist
 
 static struct timeoutlist s_timeoutlist[SYS_THREAD_MAX];
 static u16_t s_nextthread = 0;
+
+#define SCB_ICSR_REG 		(*((volatile unsigned int *)0xE000ED04))
 
 
 /*-----------------------------------------------------------------------------------*/
@@ -121,23 +124,40 @@ void sys_mbox_post(sys_mbox_t *mbox, void *data)
 //该函数用于尝试将某个消息发送至消息队列中，当消息被成功投递后，则返回成功，否则返回失败
 err_t sys_mbox_trypost(sys_mbox_t *mbox, void *msg)
 {
-err_t result;
+//err_t result;
 
-   if ( xQueueSend( *mbox, &msg, 0 ) == pdPASS )
-   {
-      result = ERR_OK;
-   }
-   else {
-      // could not post, queue must be full
-      result = ERR_MEM;
-			
-#if SYS_STATS
-      lwip_stats.sys.mbox.err++;
-#endif /* SYS_STATS */
-			
-   }
+//   if ( xQueueSend( *mbox, &msg, 0 ) == pdPASS )
+//   {
+//      result = ERR_OK;
+//   }
+//   else {
+//      // could not post, queue must be full
+//      result = ERR_MEM;
+//			
+//#if SYS_STATS
+//      lwip_stats.sys.mbox.err++;
+//#endif /* SYS_STATS */			
+//   }
 
-   return result;
+//   return result;
+
+    BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+
+    if(msg==NULL)
+        msg= (void*)&NullMessage;
+
+    if((SCB_ICSR_REG&0xFF) == 0)
+    {
+        if(xQueueSendToBack(*mbox, &msg, 0)!= pdPASS)
+        	return ERR_MEM;
+    }
+    else
+    {
+        if(xQueueSendToBackFromISR(*mbox, &msg, &xHigherPriorityTaskWoken)!= pdPASS)
+        	return ERR_MEM;
+        portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+    }
+    return ERR_OK;
 }
 
 /*-----------------------------------------------------------------------------------*/
@@ -513,8 +533,18 @@ int result;
 */
 sys_prot_t sys_arch_protect(void)
 {
-	vPortEnterCritical();
-	return 1;
+	//vPortEnterCritical();
+	//return 1;
+
+	if(SCB_ICSR_REG & 0xFF)
+	{
+		return taskENTER_CRITICAL_FROM_ISR();
+	}
+	else
+	{
+		taskENTER_CRITICAL();
+		return 0;
+	}
 }
 
 /*
@@ -526,8 +556,17 @@ sys_prot_t sys_arch_protect(void)
 */
 void sys_arch_unprotect(sys_prot_t pval)
 {
-	( void ) pval;
-	vPortExitCritical();
+	//( void ) pval;
+	//vPortExitCritical();
+
+	if(SCB_ICSR_REG & 0xFF)
+	{
+		taskEXIT_CRITICAL_FROM_ISR(pval);
+	}
+	else
+	{
+		taskEXIT_CRITICAL();
+	}	
 }
 
 /*

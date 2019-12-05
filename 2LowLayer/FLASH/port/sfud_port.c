@@ -139,7 +139,7 @@ static void spi_configuration(spi_user_data_t spi) {
     SPI_InitStructure.SPI_CPHA = SPI_CPHA_2Edge;                       //数据捕获于第一个时钟沿
     //TODO 以后可以尝试硬件 CS
     SPI_InitStructure.SPI_NSS = SPI_NSS_Soft;                          //内部  NSS 信号由 SSI 位控制
-    SPI_InitStructure.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_256; //波特率预分频值为 2
+    SPI_InitStructure.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_4; //波特率预分频值为 2
     SPI_InitStructure.SPI_FirstBit = SPI_FirstBit_MSB;                 //数据传输从 MSB 位开始
     SPI_InitStructure.SPI_CRCPolynomial = 7;                           // CRC 值计算的多项式
 

@@ -261,38 +261,34 @@ uint8_t is_bit_set(uint16_t      value, uint16_t bit)
     return 0; 
 }
 
-void dbg(char *fmt,...)
+void dbg(const char *file, const long line, const char *format, ...)
 {
-    int length = 0;
-    va_list ap;
-    char string[256];
-    char *pt;
-    va_start(ap,fmt);
-    vsprintf((char *)string,(const char *)fmt,ap);
-    pt = &string[0];
-    while(*pt!='\0')
-    {
-        length++;
-        pt++;
-    }
-//    bsp_Usart1_SendData((unsigned char *)string, length); 
-    comSendBuf(COM3,(unsigned char *)string, length);
-    va_end(ap);
-}
+    #ifdef DEBUG_PRINT
+    va_list args;
+	char debug_buf[255] = {0};	
+    /* args point to the first variable parameter */
+    va_start(args, format);
+    printf("[DEBUG](%s:%ld) ", file, line);
+    /* must use vprintf to print */
+    vsnprintf(debug_buf, sizeof(debug_buf), format, args);
+    printf("%s\n", debug_buf);
+    va_end(args);
+    #endif
 
+}
 
 void dbh(char *title,char *buf,int len)
 {
+    #ifdef DEBUG_PRINT
     int i = 0;
-    printf("----------%s-------\r\n",title);
+    printf("----------%s-------,buf length = %d\r\n",title,len);
     printf("< ");
     for(i=0;i<len;i++)
     {
         printf("%02x ",buf[i]);
     }
-    printf(" >\r\n");
-    
-    printf("\r\nbuf length = %d  \r\n",len);    
+    printf(" >\r\n");   
+    #endif
 }
 
 

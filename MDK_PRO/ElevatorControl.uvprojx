@@ -338,7 +338,7 @@
               <MiscControls></MiscControls>
               <Define>STM32F40_41xxx,USE_STDPERIPH_DRIVER</Define>
               <Undefine></Undefine>
-              <IncludePath>..\1McuLayer\CMSIS;..\1McuLayer\STM32F4xx_StdPeriph_Driver\inc;..\2LowLayer\LED;..\3MiddleLayer\delay;..\3MiddleLayer\sys;..\2LowLayer\USART;..\4UserLayer;..\5FreeRTOS\include;..\5FreeRTOS\portable\RVDS\ARM_CM4F;..\2LowLayer\FLASH;..\2LowLayer\KEY;..\3MiddleLayer\easyflash\inc;..\2LowLayer\TIME;..\2LowLayer\FLASH\inc;..\3MiddleLayer\ini;..\3MiddleLayer\stmflash;..\3MiddleLayer\ymodem;..\3MiddleLayer\cjson;..\3MiddleLayer\malloc;..\2LowLayer\BEEP;..\2LowLayer\INFRARED;..\2LowLayer\DigitalTube;..\2LowLayer\BSP;..\2LowLayer\WDG;..\2LowLayer\READER</IncludePath>
+              <IncludePath>..\1McuLayer\CMSIS;..\1McuLayer\STM32F4xx_StdPeriph_Driver\inc;..\1McuLayer\STM32F4x7_ETH_Driver\inc;..\2LowLayer\LED;..\2LowLayer\USART;..\2LowLayer\TIME;..\2LowLayer\FLASH\inc;..\3MiddleLayer\delay;..\2LowLayer\FLASH;..\2LowLayer\KEY;..\2LowLayer\BEEP;..\2LowLayer\INFRARED;..\2LowLayer\DigitalTube;..\2LowLayer\BSP;..\2LowLayer\ETHERNET;..\2LowLayer\WDG;..\2LowLayer\READER;..\3MiddleLayer\ini;..\3MiddleLayer\easyflash\inc;..\3MiddleLayer\stmflash;..\3MiddleLayer\ymodem;..\3MiddleLayer\malloc;..\3MiddleLayer\cjson;..\3MiddleLayer\sys;..\4UserLayer;..\5FreeRTOS\include;..\5FreeRTOS\portable\RVDS\ARM_CM4F;..\6LWIP;..\6LWIP\arch;..\6LWIP\lwip-1.4.1\src\include;..\6LWIP\lwip-1.4.1\src\include\ipv4;..\6LWIP\lwip-1.4.1\src\include\netif;..\6LWIP\lwip_app\lwip_comm;..\3MiddleLayer\easylogger\inc;..\3MiddleLayer\mqtt</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -416,6 +416,21 @@
               <FileName>tool.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\4UserLayer\tool.c</FilePath>
+            </File>
+            <File>
+              <FileName>tcp_server_demo.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\4UserLayer\tcp_server_demo.c</FilePath>
+            </File>
+            <File>
+              <FileName>mqttclient.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\4UserLayer\mqttclient.c</FilePath>
+            </File>
+            <File>
+              <FileName>client.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\4UserLayer\client.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -512,6 +527,11 @@
               <FileName>malloc.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\3MiddleLayer\malloc\malloc.c</FilePath>
+            </File>
+            <File>
+              <FileName>cJSON_Process.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\3MiddleLayer\cjson\cJSON_Process.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -639,6 +659,11 @@
               <FileType>1</FileType>
               <FilePath>..\2LowLayer\TIME\bsp_tim_pwm.c</FilePath>
             </File>
+            <File>
+              <FileName>lan8720.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\2LowLayer\ETHERNET\lan8720.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -708,6 +733,11 @@
               <FileName>stm32f4xx_exti.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\1McuLayer\STM32F4xx_StdPeriph_Driver\src\stm32f4xx_exti.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f4x7_eth.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\1McuLayer\STM32F4x7_ETH_Driver\src\stm32f4x7_eth.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -922,21 +952,293 @@
         </Group>
         <Group>
           <GroupName>LWIP-APP</GroupName>
+          <Files>
+            <File>
+              <FileName>lwip_comm.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\6LWIP\lwip_app\lwip_comm\lwip_comm.c</FilePath>
+            </File>
+          </Files>
         </Group>
         <Group>
           <GroupName>LWIP-API</GroupName>
+          <Files>
+            <File>
+              <FileName>api_lib.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\6LWIP\lwip-1.4.1\src\api\api_lib.c</FilePath>
+            </File>
+            <File>
+              <FileName>api_msg.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\6LWIP\lwip-1.4.1\src\api\api_msg.c</FilePath>
+            </File>
+            <File>
+              <FileName>err.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\6LWIP\lwip-1.4.1\src\api\err.c</FilePath>
+            </File>
+            <File>
+              <FileName>netbuf.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\6LWIP\lwip-1.4.1\src\api\netbuf.c</FilePath>
+            </File>
+            <File>
+              <FileName>netdb.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\6LWIP\lwip-1.4.1\src\api\netdb.c</FilePath>
+            </File>
+            <File>
+              <FileName>netifapi.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\6LWIP\lwip-1.4.1\src\api\netifapi.c</FilePath>
+            </File>
+            <File>
+              <FileName>sockets.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\6LWIP\lwip-1.4.1\src\api\sockets.c</FilePath>
+            </File>
+            <File>
+              <FileName>tcpip.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\6LWIP\lwip-1.4.1\src\api\tcpip.c</FilePath>
+            </File>
+          </Files>
         </Group>
         <Group>
           <GroupName>LWIP-CORE</GroupName>
+          <Files>
+            <File>
+              <FileName>def.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\6LWIP\lwip-1.4.1\src\core\def.c</FilePath>
+            </File>
+            <File>
+              <FileName>dhcp.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\6LWIP\lwip-1.4.1\src\core\dhcp.c</FilePath>
+            </File>
+            <File>
+              <FileName>dns.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\6LWIP\lwip-1.4.1\src\core\dns.c</FilePath>
+            </File>
+            <File>
+              <FileName>init.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\6LWIP\lwip-1.4.1\src\core\init.c</FilePath>
+            </File>
+            <File>
+              <FileName>lwip_sys.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\6LWIP\lwip-1.4.1\src\core\lwip_sys.c</FilePath>
+            </File>
+            <File>
+              <FileName>mem.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\6LWIP\lwip-1.4.1\src\core\mem.c</FilePath>
+            </File>
+            <File>
+              <FileName>memp.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\6LWIP\lwip-1.4.1\src\core\memp.c</FilePath>
+            </File>
+            <File>
+              <FileName>netif.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\6LWIP\lwip-1.4.1\src\core\netif.c</FilePath>
+            </File>
+            <File>
+              <FileName>pbuf.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\6LWIP\lwip-1.4.1\src\core\pbuf.c</FilePath>
+            </File>
+            <File>
+              <FileName>raw.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\6LWIP\lwip-1.4.1\src\core\raw.c</FilePath>
+            </File>
+            <File>
+              <FileName>stats.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\6LWIP\lwip-1.4.1\src\core\stats.c</FilePath>
+            </File>
+            <File>
+              <FileName>tcp.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\6LWIP\lwip-1.4.1\src\core\tcp.c</FilePath>
+            </File>
+            <File>
+              <FileName>tcp_in.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\6LWIP\lwip-1.4.1\src\core\tcp_in.c</FilePath>
+            </File>
+            <File>
+              <FileName>tcp_out.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\6LWIP\lwip-1.4.1\src\core\tcp_out.c</FilePath>
+            </File>
+            <File>
+              <FileName>timers.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\6LWIP\lwip-1.4.1\src\core\timers.c</FilePath>
+            </File>
+            <File>
+              <FileName>udp.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\6LWIP\lwip-1.4.1\src\core\udp.c</FilePath>
+            </File>
+          </Files>
         </Group>
         <Group>
           <GroupName>LWIP-CORE-IPV4</GroupName>
+          <Files>
+            <File>
+              <FileName>autoip.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\6LWIP\lwip-1.4.1\src\core\ipv4\autoip.c</FilePath>
+            </File>
+            <File>
+              <FileName>icmp.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\6LWIP\lwip-1.4.1\src\core\ipv4\icmp.c</FilePath>
+            </File>
+            <File>
+              <FileName>igmp.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\6LWIP\lwip-1.4.1\src\core\ipv4\igmp.c</FilePath>
+            </File>
+            <File>
+              <FileName>inet.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\6LWIP\lwip-1.4.1\src\core\ipv4\inet.c</FilePath>
+            </File>
+            <File>
+              <FileName>inet_chksum.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\6LWIP\lwip-1.4.1\src\core\ipv4\inet_chksum.c</FilePath>
+            </File>
+            <File>
+              <FileName>ip.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\6LWIP\lwip-1.4.1\src\core\ipv4\ip.c</FilePath>
+            </File>
+            <File>
+              <FileName>ip_addr.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\6LWIP\lwip-1.4.1\src\core\ipv4\ip_addr.c</FilePath>
+            </File>
+            <File>
+              <FileName>ip_frag.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\6LWIP\lwip-1.4.1\src\core\ipv4\ip_frag.c</FilePath>
+            </File>
+          </Files>
         </Group>
         <Group>
           <GroupName>LWIP-NETIF</GroupName>
+          <Files>
+            <File>
+              <FileName>etharp.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\6LWIP\lwip-1.4.1\src\netif\etharp.c</FilePath>
+            </File>
+            <File>
+              <FileName>ethernetif.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\6LWIP\lwip-1.4.1\src\netif\ethernetif.c</FilePath>
+            </File>
+          </Files>
         </Group>
         <Group>
           <GroupName>LWIP-ARCH</GroupName>
+          <Files>
+            <File>
+              <FileName>sys_arch.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\6LWIP\arch\sys_arch.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>EasyLogger</GroupName>
+          <Files>
+            <File>
+              <FileName>elog_port.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\3MiddleLayer\easylogger\port\elog_port.c</FilePath>
+            </File>
+            <File>
+              <FileName>elog.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\3MiddleLayer\easylogger\src\elog.c</FilePath>
+            </File>
+            <File>
+              <FileName>elog_utils.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\3MiddleLayer\easylogger\src\elog_utils.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>Mqtt</GroupName>
+          <Files>
+            <File>
+              <FileName>MQTTConnectClient.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\3MiddleLayer\mqtt\MQTTConnectClient.c</FilePath>
+            </File>
+            <File>
+              <FileName>MQTTConnectServer.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\3MiddleLayer\mqtt\MQTTConnectServer.c</FilePath>
+            </File>
+            <File>
+              <FileName>MQTTDeserializePublish.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\3MiddleLayer\mqtt\MQTTDeserializePublish.c</FilePath>
+            </File>
+            <File>
+              <FileName>MQTTFormat.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\3MiddleLayer\mqtt\MQTTFormat.c</FilePath>
+            </File>
+            <File>
+              <FileName>MQTTPacket.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\3MiddleLayer\mqtt\MQTTPacket.c</FilePath>
+            </File>
+            <File>
+              <FileName>MQTTSerializePublish.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\3MiddleLayer\mqtt\MQTTSerializePublish.c</FilePath>
+            </File>
+            <File>
+              <FileName>MQTTSubscribeClient.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\3MiddleLayer\mqtt\MQTTSubscribeClient.c</FilePath>
+            </File>
+            <File>
+              <FileName>MQTTSubscribeServer.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\3MiddleLayer\mqtt\MQTTSubscribeServer.c</FilePath>
+            </File>
+            <File>
+              <FileName>MQTTUnsubscribeClient.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\3MiddleLayer\mqtt\MQTTUnsubscribeClient.c</FilePath>
+            </File>
+            <File>
+              <FileName>MQTTUnsubscribeServer.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\3MiddleLayer\mqtt\MQTTUnsubscribeServer.c</FilePath>
+            </File>
+            <File>
+              <FileName>transport.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\3MiddleLayer\mqtt\transport.c</FilePath>
+            </File>
+          </Files>
         </Group>
       </Groups>
     </Target>

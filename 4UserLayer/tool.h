@@ -25,12 +25,18 @@
 #include "stdlib.h" 
 #include <stdint.h>
 
+
+
 /*----------------------------------------------*
  * 宏定义                                       *
  *----------------------------------------------*/
+ 
+#define DEBUG_PRINT
+ 
 #define setbit(x,y) x|=(1<<y)         //将X的第Y位置1    
 #define clrbit(x,y) x&=~(1<<y)        //将X的第Y位清0
 
+#define DBG(...) dbg(__FILE__, __LINE__, __VA_ARGS__)
 
 
 /*----------------------------------------------*
@@ -52,7 +58,8 @@ uint8_t xorCRC(uint8_t *buf,uint8_t len);
 void asc2bcd(unsigned char *bcd_buf, unsigned char *ascii_buf, int conv_len, unsigned char type);
 void bcd2asc(unsigned char *ascii_buf,unsigned char * bcd_buf, int conv_len, unsigned char type);
 
-void dbg(char *fmt,...);
+void dbg(const char *file, const long line, const char *format, ...);
+
 
 void dbh(char *title,char *buf,int len);
 

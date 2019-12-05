@@ -20,15 +20,21 @@
 /*----------------------------------------------*
  * 包含头文件                                   *
  *----------------------------------------------*/
+#define LOG_TAG    "main"
 #include "INCLUDES.h"
+#include "elog.h"
+#include "client.h"
+#include "tcp_server_demo.h"
+
 
 /*----------------------------------------------*
  * 宏定义                                       *
  *----------------------------------------------*/
 //任务优先级   
 
-
+#define APP_TASK_PRIO		( tskIDLE_PRIORITY)
 #define CMD_TASK_PRIO		( tskIDLE_PRIORITY)
+#define LWIP_TASK_PRIO		( tskIDLE_PRIORITY + 1)
 #define LED_TASK_PRIO		( tskIDLE_PRIORITY + 1)
 #define INFRARED_TASK_PRIO	( tskIDLE_PRIORITY + 3)
 #define MOTOR_TASK_PRIO		( tskIDLE_PRIORITY + 3)
@@ -41,15 +47,20 @@
 
 //任务堆栈大小    
 #define LED_STK_SIZE 		128
-#define MOTOR_STK_SIZE 		512 
-#define CMD_STK_SIZE 		512
+#define MOTOR_STK_SIZE 		256 
+#define CMD_STK_SIZE 		256
 #define INFRARED_STK_SIZE 	512
 #define RS485_STK_SIZE 		1024*1
 #define START_STK_SIZE 	    128
 #define QR_STK_SIZE 		512
 #define READER_STK_SIZE     512
 #define KEY_STK_SIZE        1024*2
+#define APP_STK_SIZE 		1024*2
+#define LWIP_STK_SIZE 		256
 
+
+#define  MQTT_QUEUE_LEN    4   /* 队列的长度，最大可包含多少个消息 */
+#define  MQTT_QUEUE_SIZE   4   /* 队列中每个消息大小（字节） */
 
 
 
@@ -80,11 +91,15 @@ static TaskHandle_t xHandleTaskRs485 = NULL;
 static TaskHandle_t xHandleTaskStart = NULL;    //看门狗
 
 static TaskHandle_t xHandleTaskKey = NULL;    //按键
+static TaskHandle_t xHandleTaskLwip = NULL;    //按键
+static TaskHandle_t xHandleTaskApp = NULL;    ////创建用户任务
+
+
 
 
 static SemaphoreHandle_t  xMutex = NULL;
 static EventGroupHandle_t xCreatedEventGroup = NULL;
-
+QueueHandle_t MQTT_Data_Queue =NULL;
 
 
 /*----------------------------------------------*
@@ -102,29 +117,52 @@ static void vTaskReader(void *pvParameters);
 static void vTaskQR(void *pvParameters);
 static void vTaskStart(void *pvParameters);
 static void vTaskDisplay(void *pvParameters);
+static void vTaskLwip(void *pvParameters);
+static void vTaskAppCreate(void *pvParameters);
 
 
 
+static void show_address(u8 mode);
 
-
-
-static void AppTaskCreate(void);
 static void AppObjCreate (void);
 static void App_Printf(char *format, ...);
 //static void AppEventCreate (void);
+static void EasyLogInit(void);
 
 int main(void)
 {    
     //硬件初始化
-    bsp_Init();     
+    bsp_Init();  
 
-	/* 创建任务 */
-	AppTaskCreate();
+    EasyLogInit();    
+
+	mymem_init(SRAMIN);								//初始化内部内存池
+	mymem_init(SRAMEX);								//初始化外部内存池
+	mymem_init(SRAMCCM);	  					    //初始化CCM内存池
+
+	while(lwip_comm_init() != 0) //lwip初始化
+	{
+        log_d("lwip init error!\r\n");
+		delay_ms(1200);
+	}
+
+    log_d("lwip init success!\r\n");
 
 	/* 创建任务通信机制 */
-	AppObjCreate();
+	AppObjCreate(); 
 
     
+
+
+    
+	//创建开始任务
+    xTaskCreate((TaskFunction_t )vTaskAppCreate,            //任务函数
+                (const char*    )"AppCreate",          //任务名称
+                (uint16_t       )APP_STK_SIZE,        //任务堆栈大小
+                (void*          )NULL,                  //传递给任务函数的参数
+                (UBaseType_t    )APP_TASK_PRIO,       //任务优先级
+                (TaskHandle_t*  )&xHandleTaskApp);   //任务句柄          
+                
     /* 启动调度，开始执行任务 */
     vTaskStartScheduler();
     
@@ -138,8 +176,21 @@ int main(void)
 *	返 回 值: 无
 *********************************************************************************************************
 */
-static void AppTaskCreate (void)
+void vTaskAppCreate (void *pvParameters)
 {
+
+#if LWIP_DHCP
+	lwip_comm_dhcp_creat(); 							//创建DHCP任务
+#endif
+
+//    tcp_server_init(); //tcp server demo
+
+    mqtt_thread_init();
+
+//    client_init();
+
+    taskENTER_CRITICAL();           //进入临界区
+
     //创建LED任务
     xTaskCreate((TaskFunction_t )vTaskLed,         
                 (const char*    )"vTaskLed",       
@@ -166,40 +217,46 @@ static void AppTaskCreate (void)
                 
 
     //跟android通讯串口数据解析
-    xTaskCreate((TaskFunction_t )vTaskMsgPro,     
-                (const char*    )"cmd",   
-                (uint16_t       )CMD_STK_SIZE, 
-                (void*          )NULL,
-                (UBaseType_t    )CMD_TASK_PRIO,
-                (TaskHandle_t*  )&xHandleTaskCmd);      
+//    xTaskCreate((TaskFunction_t )vTaskMsgPro,     
+//                (const char*    )"cmd",   
+//                (uint16_t       )CMD_STK_SIZE, 
+//                (void*          )NULL,
+//                (UBaseType_t    )CMD_TASK_PRIO,
+//                (TaskHandle_t*  )&xHandleTaskCmd);      
 
     //红外传感器状态上送
-    xTaskCreate((TaskFunction_t )vTaskInfrared,     
-                (const char*    )"vTaskInfrared",   
-                (uint16_t       )INFRARED_STK_SIZE, 
-                (void*          )NULL,
-                (UBaseType_t    )INFRARED_TASK_PRIO,
-                (TaskHandle_t*  )&xHandleTaskInfrared);    
+//    xTaskCreate((TaskFunction_t )vTaskInfrared,     
+//                (const char*    )"vTaskInfrared",   
+//                (uint16_t       )INFRARED_STK_SIZE, 
+//                (void*          )NULL,
+//                (UBaseType_t    )INFRARED_TASK_PRIO,
+//                (TaskHandle_t*  )&xHandleTaskInfrared);    
 
 
     //485任务
-    xTaskCreate((TaskFunction_t )vTaskRs485,     
-                (const char*    )"vTaskRs485",   
-                (uint16_t       )RS485_STK_SIZE, 
-                (void*          )NULL,
-                (UBaseType_t    )RS485_TASK_PRIO,
-                (TaskHandle_t*  )&xHandleTaskRs485);  
+//    xTaskCreate((TaskFunction_t )vTaskRs485,     
+//                (const char*    )"vTaskRs485",   
+//                (uint16_t       )RS485_STK_SIZE, 
+//                (void*          )NULL,
+//                (UBaseType_t    )RS485_TASK_PRIO,
+//                (TaskHandle_t*  )&xHandleTaskRs485);  
 
     //韦根读卡器
-    xTaskCreate((TaskFunction_t )vTaskReader,     
-                (const char*    )"vTaskReader",   
-                (uint16_t       )READER_STK_SIZE, 
-                (void*          )NULL,
-                (UBaseType_t    )READER_TASK_PRIO,
-                (TaskHandle_t*  )&xHandleTaskReader);    
+//    xTaskCreate((TaskFunction_t )vTaskReader,     
+//                (const char*    )"vTaskReader",   
+//                (uint16_t       )READER_STK_SIZE, 
+//                (void*          )NULL,
+//                (UBaseType_t    )READER_TASK_PRIO,
+//                (TaskHandle_t*  )&xHandleTaskReader);   
 
-    //二维码扫码模块
-    
+    xTaskCreate((TaskFunction_t )vTaskLwip,
+                (const char*    )"vTaskLwip",   
+                (uint16_t       )LWIP_STK_SIZE, 
+                (void*          )NULL,
+                (UBaseType_t    )LWIP_TASK_PRIO,
+                (TaskHandle_t*  )&xHandleTaskLwip);                     
+
+    //二维码扫码模块    
 //    xTaskCreate((TaskFunction_t )vTaskDisplay, 
 //    xTaskCreate((TaskFunction_t )vTaskQR,     
 //                (const char*    )"vTaskQR",   
@@ -214,7 +271,10 @@ static void AppTaskCreate (void)
 //                (uint16_t       )START_STK_SIZE,        /* 任务栈大小，单位word，也就是4字节 */
 //                (void*          )NULL,           		/* 任务参数  */
 //                (UBaseType_t    )START_TASK_PRIO,       /* 任务优先级*/
-//                (TaskHandle_t*  )&xHandleTaskStart );   /* 任务句柄  */                
+//                (TaskHandle_t*  )&xHandleTaskStart );   /* 任务句柄  */    
+
+	vTaskDelete(xHandleTaskApp); //删除开始任务
+    taskEXIT_CRITICAL();            //退出临界区
 
 }
 
@@ -244,7 +304,13 @@ static void AppObjCreate (void)
 	if(xMutex == NULL)
     {
         /* 没有创建成功，用户可以在这里加入创建失败的处理机制 */
-    }    
+    }  
+
+  /* 创建Test_Queue */
+  MQTT_Data_Queue = xQueueCreate((UBaseType_t ) MQTT_QUEUE_LEN,/* 消息队列的长度 */
+                                 (UBaseType_t ) MQTT_QUEUE_SIZE);/* 消息的大小 */
+  if(NULL != MQTT_Data_Queue)
+    log_d("创建MQTT_Data_Queue消息队列成功!\r\n");    
 
 }
 
@@ -447,67 +513,28 @@ void vTaskKey(void *pvParameters)
 				/* K2键按下，打印串口操作命令 */
 				case KEY_RR_PRES:
                 
-                    App_Printf("KEY_DOWN_K2\r\n");
+                    log_a("KEY_DOWN_K2\r\n");
 
-                    RL3 = 1;
-                    delay_us(100);
-                    printf("RL3 = 1,the door status = %d\r\n",LOCK_STATUS);
-
-                    
-                    #ifndef RS485TEST
-                    bsp_RS485_Send_Data(open,8);
-                    #else
-                    RS485_SendBuf(COM1,open,8);
-//                    RS485_SendBuf(COM2,open,8);
-                    #endif
-					//FlashTest();
-					//ReadIAP();  
-//                    ef_erase_bak_app( 0x10000 ); 
-//                    RestoreDefaultSetting();
-//                    SystemReset();
-                    //IAP_DownLoadToFlash();					
+			
 					break;
 				case KEY_LL_PRES:
 
-                    RL3 = 0;
-                    delay_us(100);
+                    log_i("KEY_DOWN_K3\r\n");                    
 
-                    printf("RL3 = 0,the door status = %d\r\n",LOCK_STATUS);
-                    
-                    #ifndef RS485TEST
-                    bsp_RS485_Send_Data(close,8);
-                    #else
-                    RS485_SendBuf(COM1,close,8);
-//                    RS485_SendBuf(COM2,close,8);
-                    #endif
-
-                    App_Printf("KEY_DOWN_K3\r\n");
-                    
-					//SystemReset();
-					//json_test();
                     Get_ChipID(id);
                     App_Printf("mcu id = %x %x %x\r\n",id[0],id[1],id[2]); 
 					break;
 				case KEY_OK_PRES:    
        
-                    App_Printf("KEY_DOWN_K4\r\n");
+                    log_w("KEY_DOWN_K4\r\n");
                     crc_value = CRC16_Modbus(cm4, 54);
-                    App_Printf("hi = %02x, lo = %02x\r\n", crc_value>>8, crc_value & 0xff);
-                    ef_print_env();
+                    log_v("hi = %02x, lo = %02x\r\n", crc_value>>8, crc_value & 0xff);
 
-                    test_env();
-//                    bsp_Usart3_SendString("1234");   
-//                    spi_flash_demo();
-//                    FlashTest();                    
-//                  if(SPI_Flash_Test() == 0)
-                    {
-//                        BEEP = ~BEEP;
-                    } 
 					break;                
 				
 				/* 其他的键值不处理 */
 				default:   
-				App_Printf("KEY_default\r\n");
+				log_e("KEY_default\r\n");
 					break;
 			}
 		}
@@ -685,6 +712,28 @@ void vTaskQR(void *pvParameters)
 }   
 
 
+//打印地址等信息
+void vTaskLwip(void *pvParameters)
+{
+	while(1)
+	{ 
+
+#if LWIP_DHCP									        //当开启DHCP的时候     
+		if(lwipdev.dhcpstatus != 0) 					//开启DHCP
+		{
+			show_address(lwipdev.dhcpstatus );			//显示地址信息
+			vTaskSuspend(xHandleTaskLwip); 		//显示完地址信息后挂起自身任务
+		}
+#else
+		show_address(0); 						        //显示静态地址
+		vTaskSuspend(xHandleTaskLwip); 			//显示完地址信息后挂起自身任务
+#endif //LWIP_DHCP
+		vTaskDelay(500);      							//延时500ms
+	}
+}
+
+
+
 
 /*
 *********************************************************************************************************
@@ -714,6 +763,52 @@ static void  App_Printf(char *format, ...)
     printf("%s", buf_str);
 
    	xSemaphoreGive(xMutex);
+}
+
+
+
+static void show_address(u8 mode)
+{
+	u8 buf[30];
+	if(mode==2)
+	{
+		sprintf((char*)buf,"MAC    :%d.%d.%d.%d.%d.%d\r\n",lwipdev.mac[0],lwipdev.mac[1],lwipdev.mac[2],lwipdev.mac[3],lwipdev.mac[4],lwipdev.mac[5]);//打印MAC地址
+		App_Printf((char*)buf); 
+		sprintf((char*)buf,"DHCP IP:%d.%d.%d.%d\r\n",lwipdev.ip[0],lwipdev.ip[1],lwipdev.ip[2],lwipdev.ip[3]);						//打印动态IP地址
+		App_Printf((char*)buf); 
+		sprintf((char*)buf,"DHCP GW:%d.%d.%d.%d\r\n",lwipdev.gateway[0],lwipdev.gateway[1],lwipdev.gateway[2],lwipdev.gateway[3]);	//打印网关地址
+		App_Printf((char*)buf); 
+		sprintf((char*)buf,"DHCP IP:%d.%d.%d.%d\r\n",lwipdev.netmask[0],lwipdev.netmask[1],lwipdev.netmask[2],lwipdev.netmask[3]);	//打印子网掩码地址
+		App_Printf((char*)buf); 
+	}
+	else 
+	{
+		sprintf((char*)buf,"MAC      :%d.%d.%d.%d.%d.%d\r\n",lwipdev.mac[0],lwipdev.mac[1],lwipdev.mac[2],lwipdev.mac[3],lwipdev.mac[4],lwipdev.mac[5]);//打印MAC地址
+		App_Printf((char*)buf); 
+		sprintf((char*)buf,"Static IP:%d.%d.%d.%d\r\n",lwipdev.ip[0],lwipdev.ip[1],lwipdev.ip[2],lwipdev.ip[3]);						//打印动态IP地址
+		App_Printf((char*)buf); 
+		sprintf((char*)buf,"Static GW:%d.%d.%d.%d\r\n",lwipdev.gateway[0],lwipdev.gateway[1],lwipdev.gateway[2],lwipdev.gateway[3]);	//打印网关地址
+		App_Printf((char*)buf); 
+		sprintf((char*)buf,"Static IP:%d.%d.%d.%d\r\n",lwipdev.netmask[0],lwipdev.netmask[1],lwipdev.netmask[2],lwipdev.netmask[3]);	//打印子网掩码地址
+		App_Printf((char*)buf); 
+	}	
+}
+
+static void EasyLogInit(void)
+{
+    /* initialize EasyLogger */
+     elog_init();
+     /* set EasyLogger log format */
+     elog_set_fmt(ELOG_LVL_ASSERT, ELOG_FMT_ALL);
+     elog_set_fmt(ELOG_LVL_ERROR, ELOG_FMT_LVL | ELOG_FMT_TAG );
+     elog_set_fmt(ELOG_LVL_WARN, ELOG_FMT_LVL | ELOG_FMT_TAG );
+     elog_set_fmt(ELOG_LVL_INFO, ELOG_FMT_LVL | ELOG_FMT_TAG );
+     elog_set_fmt(ELOG_LVL_DEBUG, ELOG_FMT_ALL & ~ELOG_FMT_TIME);
+     elog_set_fmt(ELOG_LVL_VERBOSE, ELOG_FMT_ALL & ~ELOG_FMT_TIME);
+
+     
+     /* start EasyLogger */
+     elog_start();  
 }
 
 

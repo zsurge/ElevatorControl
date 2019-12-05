@@ -33,12 +33,12 @@
 #define __LWIPOPTS_H__
 
 /* Prevent having to link sys_arch.c (we don't test the API layers in unit tests) */
-#define NO_SYS                          1
+#define NO_SYS                          0
 #define LWIP_NETCONN                    0
-#define LWIP_SOCKET                     0
+#define LWIP_SOCKET                     1
 
 /* Minimal changes to opt.h required for tcp unit tests: */
-#define MEM_SIZE                        16000
+#define MEM_SIZE                        15*1024
 #define TCP_SND_QUEUELEN                40
 #define MEMP_NUM_TCP_SEG                TCP_SND_QUEUELEN
 #define TCP_SND_BUF                     (12 * TCP_MSS)
